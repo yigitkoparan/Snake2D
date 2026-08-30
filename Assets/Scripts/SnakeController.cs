@@ -1,23 +1,31 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class SnakeController : MonoBehaviour
 {
-    [SerializeField] float moveInterval = 0.1f;
-    Vector2 direction = Vector2.right;
+    [SerializeField] TextMeshProUGUI scoreText;
+    int score = 0;
+    
+    [SerializeField] float startMoveInterval = 0.3f;
+    [SerializeField] Vector2 direction = Vector2.right;
 
-    [SerializeField]Transform segmentPrefab;
-    int initialSize = 4;
+    [SerializeField] Transform segmentPrefab;
+    [SerializeField] int initialSize = 4;
 
     private List<Transform> segments = new List<Transform>();
     private Vector2 inputDirection;
     private float nextMoveTime;
+    float moveInterval;
 
+    public List<Transform> Segments => segments;
+    
     void Start()
     {
         resetState();
+        scoreText.text = score.ToString();
     }
 
     void Update()
@@ -42,10 +50,7 @@ public class SnakeController : MonoBehaviour
                 inputDirection = Vector2.right;
             }
         }
-    }
 
-    void FixedUpdate()
-    {
         if(Time.time >= nextMoveTime)
         {
             nextMoveTime = Time.time + moveInterval;
@@ -80,7 +85,10 @@ public class SnakeController : MonoBehaviour
     {
         for(int i = 1; i < segments.Count; i++)
         {
-            Destroy(segments[i].gameObject);
+            if (segments[i] != null)
+            {
+                Destroy(segments[i].gameObject);
+            }
         }
 
         segments.Clear();
@@ -89,10 +97,15 @@ public class SnakeController : MonoBehaviour
         transform.position = Vector3.zero;
         direction = Vector2.right;
         inputDirection = Vector2.right;
+        moveInterval = startMoveInterval;
+        score = 0;
+        scoreText.text = score.ToString();
 
-        for(int i = 0; i < initialSize; i++)
+        for (int i = 1; i < initialSize; i++)
         {
-            Grow();
+            Transform segment = Instantiate(segmentPrefab);
+            segment.position = new Vector3(-i, 0f, 0f);
+            segments.Add(segment);
         }
     }
 
@@ -101,8 +114,18 @@ public class SnakeController : MonoBehaviour
         if (collision.CompareTag("Food"))
         {
             Grow();
-        }
-        else if (collision.CompareTag("Obstacle"))
+            if(moveInterval > 0.08f)
+            {
+                moveInterval -= 0.02f;
+            }
+            else
+            {
+                moveInterval = 0.08f;
+            }
+            score += 100;
+            scoreText.text = score.ToString();
+        } 
+        else if (collision.CompareTag("Obstacle") || collision.CompareTag("Body"))
         {
             resetState();
         }
