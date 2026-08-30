@@ -6,19 +6,25 @@ using UnityEngine.InputSystem;
 
 public class SnakeController : MonoBehaviour
 {
+    [Header("UI")]
     [SerializeField] TextMeshProUGUI scoreText;
-    int score = 0;
+    [SerializeField] GameObject gameOverPanel;
     
+    [Header("Movement")]
     [SerializeField] float startMoveInterval = 0.3f;
     [SerializeField] Vector2 direction = Vector2.right;
 
+    [Header("Snake Setup")]
     [SerializeField] Transform segmentPrefab;
     [SerializeField] int initialSize = 4;
+    [SerializeField] Food food;
 
     private List<Transform> segments = new List<Transform>();
     private Vector2 inputDirection;
     private float nextMoveTime;
     float moveInterval;
+    int score = 0;
+    bool isGameOver = false;
 
     public List<Transform> Segments => segments;
     
@@ -30,6 +36,15 @@ public class SnakeController : MonoBehaviour
 
     void Update()
     {
+        if (isGameOver)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                restartGame();
+            }
+            return;
+        }
+
         if(direction.x != 0f)
         {
             if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
@@ -81,8 +96,43 @@ public class SnakeController : MonoBehaviour
         segments.Add(segment);
     }
 
+    void GameOver()
+    {
+        isGameOver = true;
+
+        gameObject.transform.Translate(0f,0f,0f);
+        food.gameObject.SetActive(false);
+
+        for(int i = 1; i < segments.Count; i++)
+        {
+            if (segments[i] != null)
+            {
+                Destroy(segments[i].gameObject);
+            }
+        }
+
+        if(gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+    }
+
+    void restartGame()
+    {
+        resetState();
+    }
+
     void resetState()
     {
+        isGameOver = false;
+
+        food.gameObject.SetActive(true);
+
+        if(gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
+        
         for(int i = 1; i < segments.Count; i++)
         {
             if (segments[i] != null)
@@ -100,6 +150,7 @@ public class SnakeController : MonoBehaviour
         moveInterval = startMoveInterval;
         score = 0;
         scoreText.text = score.ToString();
+        food.RandomizePosition();
 
         for (int i = 1; i < initialSize; i++)
         {
@@ -127,7 +178,7 @@ public class SnakeController : MonoBehaviour
         } 
         else if (collision.CompareTag("Obstacle") || collision.CompareTag("Body"))
         {
-            resetState();
+            GameOver();
         }
     }
 }

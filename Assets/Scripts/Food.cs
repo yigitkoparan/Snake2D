@@ -10,7 +10,7 @@ public class Food : MonoBehaviour
         RandomizePosition();
     }
 
-    void RandomizePosition()
+    public void RandomizePosition()
     {
         Bounds bounds = gridArea.bounds;
         Vector3 newPos;
