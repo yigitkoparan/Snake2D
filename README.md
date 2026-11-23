@@ -1,6 +1,6 @@
 # Snake 2D (Unity)
 
-A classic retro arcade Snake game built in Unity 6. Navigate the grid, eat food to grow longer, and survive as the speed progressively increases[cite: 1, 5].
+A classic retro arcade Snake game built in Unity 6. Navigate the grid, eat food to grow longer, and survive as the speed progressively increases.
 
 ---
 
